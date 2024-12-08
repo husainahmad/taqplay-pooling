@@ -1,10 +1,11 @@
 package com.interview.taqplay.pooling.repository;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.interview.taqplay.pooling.configuration.TaqplayProperties;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -16,6 +17,7 @@ public class ShipRepository {
 
     private final WebClient webClient = WebClient.builder().build();
     private final TaqplayProperties taqplayProperties;
+    private final ObjectMapper objectMapper;
 
     public void triggerShipInformation() {
         log.debug("URL {}", taqplayProperties.getUrl().getShip());
@@ -23,17 +25,13 @@ public class ShipRepository {
                 .uri(taqplayProperties.getUrl().getShip())
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .retrieve();
-        retrieve.onStatus(httpStatusCode -> httpStatusCode.equals(HttpStatus.NO_CONTENT), clientResponse -> {
-            log.debug("NO_CONTENT {}", clientResponse);
-            return null;
-        });
-        retrieve.onStatus(httpStatusCode -> httpStatusCode.equals(HttpStatus.INTERNAL_SERVER_ERROR), clientResponse -> {
-            log.debug("INTERNAL_SERVER_ERROR {}", clientResponse);
-            return null;
-        });
-        retrieve.onStatus(httpStatusCode -> httpStatusCode.equals(HttpStatus.NOT_FOUND), clientResponse -> {
-            log.debug("NOT_FOUND {}", clientResponse);
-            return null;
+        retrieve.bodyToMono(ApiResponse.class).subscribe(apiResponse ->
+        {
+            try {
+                log.debug("{}", objectMapper.writeValueAsString(apiResponse.getData()));
+            } catch (JsonProcessingException e) {
+                log.error(e.getMessage());
+            }
         });
 
     }

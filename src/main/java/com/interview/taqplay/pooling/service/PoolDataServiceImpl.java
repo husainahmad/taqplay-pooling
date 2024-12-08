@@ -16,7 +16,8 @@ public class PoolDataServiceImpl implements PoolDataService {
     @Async
     @Override
     public void poolShip() {
-        log.debug("trigger ship to get information");
+        log.debug("trigger start ship to get information");
         shipRepository.triggerShipInformation();
+        log.debug("trigger end ship to get information");
     }
 }

@@ -25,14 +25,14 @@ public class ShipRepository {
                 .uri(taqplayProperties.getUrl().getShip())
                 .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .retrieve();
-        retrieve.bodyToMono(ApiResponse.class).subscribe(apiResponse ->
-        {
-            try {
-                log.debug("{}", objectMapper.writeValueAsString(apiResponse.getData()));
-            } catch (JsonProcessingException e) {
-                log.error(e.getMessage());
-            }
-        });
+        retrieve.bodyToMono(ApiResponse.class).subscribe(this::logResponse);
+    }
 
+    private void logResponse(ApiResponse apiResponse) {
+        try {
+            log.debug("{}", objectMapper.writeValueAsString(apiResponse.getData()));
+        } catch (JsonProcessingException e) {
+            log.error(e.getMessage());
+        }
     }
 }
